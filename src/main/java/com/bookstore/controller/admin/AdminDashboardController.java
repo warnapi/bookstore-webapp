@@ -47,7 +47,7 @@ public class AdminDashboardController extends HttpServlet {
             }
             
             // Статистика
-            adminService.getBookStatistics();
+            var bookStatistics = adminService.getBookStatistics();
             adminService.getUserStatistics();
             BigDecimal totalSales = orderService.getTotalSales();
             long totalOrders = orderService.countOrders();
@@ -62,6 +62,7 @@ public class AdminDashboardController extends HttpServlet {
             request.setAttribute("totalOrders", totalOrders);
             request.setAttribute("recentOrders", recentOrders);
             request.setAttribute("popularBooks", popularBooks);
+            request.setAttribute("bookStatistics", bookStatistics);
             
             request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
             

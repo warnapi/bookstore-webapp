@@ -19,18 +19,23 @@ public class WishlistDao extends BaseDao {
     public Wishlist create(Wishlist wishlist) throws SQLException {
         String sql = """
             INSERT INTO wishlists (user_id, name) VALUES (?, ?)
-            RETURNING id
             """;
         
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setLong(1, wishlist.userId());
             stmt.setString(2, wishlist.name());
             
-            try (ResultSet rs = stmt.executeQuery()) {
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Не удалось создать список желаний");
+            }
+            
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return new Wishlist(rs.getLong("id"), wishlist.userId(), wishlist.name());
+                    return new Wishlist(rs.getLong(1), wishlist.userId(), wishlist.name(), 0);
                 }
             }
         }
@@ -42,7 +47,14 @@ public class WishlistDao extends BaseDao {
      * Находит список желаний по ID.
      */
     public Optional<Wishlist> findById(Long id) throws SQLException {
-        String sql = "SELECT id, user_id, name FROM wishlists WHERE id = ?";
+        String sql = """
+            SELECT w.id, w.user_id, w.name, 
+                   COALESCE(COUNT(wi.id), 0) as item_count
+            FROM wishlists w
+            LEFT JOIN wishlist_items wi ON w.id = wi.wishlist_id
+            WHERE w.id = ?
+            GROUP BY w.id, w.user_id, w.name
+            """;
         
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -54,7 +66,8 @@ public class WishlistDao extends BaseDao {
                     return Optional.of(new Wishlist(
                         rs.getLong("id"),
                         rs.getLong("user_id"),
-                        rs.getString("name")
+                        rs.getString("name"),
+                        rs.getInt("item_count")
                     ));
                 }
             }
@@ -67,7 +80,15 @@ public class WishlistDao extends BaseDao {
      * Получает все списки желаний пользователя.
      */
     public List<Wishlist> findByUserId(Long userId) throws SQLException {
-        String sql = "SELECT id, user_id, name FROM wishlists WHERE user_id = ? ORDER BY name";
+        String sql = """
+            SELECT w.id, w.user_id, w.name, 
+                   COALESCE(COUNT(wi.id), 0) as item_count
+            FROM wishlists w
+            LEFT JOIN wishlist_items wi ON w.id = wi.wishlist_id
+            WHERE w.user_id = ?
+            GROUP BY w.id, w.user_id, w.name
+            ORDER BY w.name
+            """;
         
         List<Wishlist> wishlists = new ArrayList<>();
         
@@ -81,7 +102,8 @@ public class WishlistDao extends BaseDao {
                     wishlists.add(new Wishlist(
                         rs.getLong("id"),
                         rs.getLong("user_id"),
-                        rs.getString("name")
+                        rs.getString("name"),
+                        rs.getInt("item_count")
                     ));
                 }
             }
@@ -126,7 +148,6 @@ public class WishlistDao extends BaseDao {
     public WishlistItem addItem(Long wishlistId, Long bookId) throws SQLException {
         String insertSql = """
             INSERT INTO wishlist_items (wishlist_id, book_id) VALUES (?, ?)
-            RETURNING id
             """;
         
         String bookSql = """
@@ -146,13 +167,20 @@ public class WishlistDao extends BaseDao {
                 
                 // Добавляем книгу
                 Long itemId;
-                try (PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+                try (PreparedStatement stmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
                     stmt.setLong(1, wishlistId);
                     stmt.setLong(2, bookId);
                     
-                    try (ResultSet rs = stmt.executeQuery()) {
+                    int affectedRows = stmt.executeUpdate();
+                    
+                    if (affectedRows == 0) {
+                        conn.rollback();
+                        throw new SQLException("Не удалось добавить книгу");
+                    }
+                    
+                    try (ResultSet rs = stmt.getGeneratedKeys()) {
                         if (rs.next()) {
-                            itemId = rs.getLong("id");
+                            itemId = rs.getLong(1);
                         } else {
                             conn.rollback();
                             throw new SQLException("Не удалось добавить книгу");

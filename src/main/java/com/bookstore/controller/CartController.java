@@ -41,7 +41,11 @@ public class CartController extends HttpServlet {
             // Получаем товары корзины
             List<CartItem> cartItems = cartService.getCartItems(user.id());
             
+            // Вычисляем общую сумму
+            java.math.BigDecimal total = cartService.getCartTotal(user.id());
+            
             request.setAttribute("cartItems", cartItems);
+            request.setAttribute("cartTotal", total);
             request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
             
         } catch (Exception e) {

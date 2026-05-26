@@ -15,15 +15,15 @@
     <!-- Context Parameters -->
     <context-param>
         <param-name>db.url</param-name>
-        <param-value>jdbc:h2:C:/temp/bookstore;DB_CLOSE_DELAY=-1;MODE=PostgreSQL</param-value>
+        <param-value>jdbc:postgresql://localhost:5432/mydatabase</param-value>
     </context-param>
     <context-param>
         <param-name>db.username</param-name>
-        <param-value>sa</param-value>
+        <param-value>warnap</param-value>
     </context-param>
     <context-param>
         <param-name>db.password</param-name>
-        <param-value></param-value>
+        <param-value>123123</param-value>
     </context-param>
     <context-param>
         <param-name>db.maxPoolSize</param-name>

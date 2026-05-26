@@ -20,11 +20,10 @@ public class ReviewDao extends BaseDao {
         String sql = """
             INSERT INTO reviews (user_id, book_id, book_title, user_name, rating, text)
             VALUES (?, ?, ?, ?, ?, ?)
-            RETURNING id, created_at
             """;
         
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setLong(1, review.userId());
             stmt.setLong(2, review.bookId());
@@ -33,19 +32,35 @@ public class ReviewDao extends BaseDao {
             stmt.setInt(5, review.rating());
             stmt.setString(6, review.text());
             
-            try (ResultSet rs = stmt.executeQuery()) {
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Не удалось создать отзыв");
+            }
+            
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return new Review(
-                        rs.getLong("id"),
-                        review.userId(),
-                        review.bookId(),
-                        review.bookTitle(),
-                        review.userName(),
-                        review.rating(),
-                        review.text(),
-                        ReviewStatus.PENDING_MODERATION,
-                        rs.getTimestamp("created_at").toLocalDateTime()
-                    );
+                    Long id = rs.getLong(1);
+                    // created_at генерируется базой данных
+                    String selectSql = "SELECT created_at FROM reviews WHERE id = ?";
+                    try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+                        selectStmt.setLong(1, id);
+                        try (ResultSet selectRs = selectStmt.executeQuery()) {
+                            if (selectRs.next()) {
+                                return new Review(
+                                    id,
+                                    review.userId(),
+                                    review.bookId(),
+                                    review.bookTitle(),
+                                    review.userName(),
+                                    review.rating(),
+                                    review.text(),
+                                    ReviewStatus.PENDING_MODERATION,
+                                    selectRs.getTimestamp("created_at").toLocalDateTime()
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }

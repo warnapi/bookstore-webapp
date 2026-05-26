@@ -38,7 +38,7 @@
                             </div>
                         </c:if>
                         <div class="mt-auto">
-                            <p class="price">${book.price} ₽</p>
+                            <p class="price">${book.price} BYN</p>
                             <a href="${pageContext.request.contextPath}/book/${book.id}" class="btn btn-primary w-100">
                                 Подробнее
                             </a>

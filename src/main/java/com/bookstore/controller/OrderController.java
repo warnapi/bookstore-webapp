@@ -45,9 +45,33 @@ public class OrderController extends HttpServlet {
             if (pathInfo == null || pathInfo.equals("/")) {
                 // Страница оформления заказа
                 boolean hasUnavailableItems = cartService.hasUnavailableItems(user.id());
+                java.math.BigDecimal cartTotal = cartService.getCartTotal(user.id());
+                
                 request.setAttribute("hasUnavailableItems", hasUnavailableItems);
+                request.setAttribute("cartTotal", cartTotal);
                 
                 request.getRequestDispatcher("/WEB-INF/views/order/checkout.jsp").forward(request, response);
+                
+            } else if (pathInfo.startsWith("/details/")) {
+                // Страница деталей заказа
+                String orderIdStr = pathInfo.substring(9);
+                try {
+                    Long orderId = Long.parseLong(orderIdStr);
+                    Order order = orderService.findOrderById(orderId).orElse(null);
+                    
+                    if (order == null || !order.userId().equals(user.id())) {
+                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        return;
+                    }
+                    
+                    request.setAttribute("order", order);
+                    request.getRequestDispatcher("/WEB-INF/views/order/order-details.jsp").forward(request, response);
+                    return;
+                } catch (NumberFormatException e) {
+                    // Игнорируем
+                }
+                
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 
             } else if (pathInfo.startsWith("/success/")) {
                 // Страница успеха

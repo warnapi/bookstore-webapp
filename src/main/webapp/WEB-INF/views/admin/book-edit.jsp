@@ -1,14 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="jakarta.tags.core" prefix="c" %>
-<%
-    String pageTitle = (book != null && book.id() != null) ? "Редактировать книгу" : "Добавить книгу";
-    request.setAttribute("title", pageTitle);
-%>
+<c:set var="title" value="${not empty book ? 'Редактировать книгу' : 'Добавить книгу'}" />
 <%@ include file="/WEB-INF/views/layout.jsp" %>
 
 <h1 class="mb-4">
     <c:choose>
-        <c:when test="${book != null and book.id() != null}">
+        <c:when test="${not empty book and book.id != null}">
             <i class="bi bi-pencil"></i> Редактировать книгу
         </c:when>
         <c:otherwise>
@@ -21,7 +18,7 @@
     <div class="card-body">
         <form action="${pageContext.request.contextPath}/admin/books" method="post">
             <input type="hidden" name="action" value="save">
-            <c:if test="${book != null and book.id() != null}">
+            <c:if test="${not empty book and book.id != null}">
                 <input type="hidden" name="id" value="${book.id}">
             </c:if>
             
@@ -30,53 +27,53 @@
                     <div class="mb-3">
                         <label for="title" class="form-label">Название *</label>
                         <input type="text" class="form-control" id="title" name="title" 
-                               value="${book != null ? book.title : ''}" required>
+                               value="${book.title}" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="author" class="form-label">Автор *</label>
                         <input type="text" class="form-control" id="author" name="author" 
-                               value="${book != null ? book.author : ''}" required>
+                               value="${book.author}" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="isbn" class="form-label">ISBN *</label>
                         <input type="text" class="form-control" id="isbn" name="isbn" 
-                               value="${book != null ? book.isbn : ''}" required>
+                               value="${book.isbn}" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="description" class="form-label">Описание</label>
-                        <textarea class="form-control" id="description" name="description" rows="5">${book != null ? book.description : ''}</textarea>
+                        <textarea class="form-control" id="description" name="description" rows="5">${book.description}</textarea>
                     </div>
                     
                     <div class="mb-3">
                         <label for="category" class="form-label">Категория *</label>
                         <input type="text" class="form-control" id="category" name="category" 
-                               value="${book != null ? book.category : ''}" required>
+                               value="${book.category}" required>
                     </div>
                 </div>
                 
                 <div class="col-md-4">
                     <div class="mb-3">
-                        <label for="price" class="form-label">Цена (₽) *</label>
+                        <label for="price" class="form-label">Цена (BYN) *</label>
                         <input type="number" class="form-control" id="price" name="price" 
-                               value="${book != null ? book.price : '0'}" min="0" step="0.01" required>
+                               value="${book.price}" min="0" step="0.01" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="stock" class="form-label">Наличие на складе *</label>
                         <input type="number" class="form-control" id="stock" name="stock" 
-                               value="${book != null ? book.stock : '0'}" min="0" required>
+                               value="${book.stock}" min="0" required>
                     </div>
                     
                     <div class="mb-3">
                         <label for="imageUrl" class="form-label">URL обложки</label>
                         <input type="url" class="form-control" id="imageUrl" name="imageUrl" 
-                               value="${book != null ? book.imageUrl : ''}">
+                               value="${book.imageUrl}">
                     </div>
                     
-                    <c:if test="${book != null and book.imageUrl != null}">
+                    <c:if test="${not empty book.imageUrl}">
                         <div class="mb-3">
                             <label class="form-label">Превью</label>
                             <img src="${book.imageUrl}" class="img-fluid" style="max-height: 300px;">

@@ -54,7 +54,7 @@
                                 </c:choose>
                             </td>
                             <td>
-                                <a href="${pageContext.request.contextPath}/order/${order.id}" class="btn btn-sm btn-outline-primary">
+                                <a href="${pageContext.request.contextPath}/order/details/${order.id}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <c:if test="${order.canBeCancelled()}">

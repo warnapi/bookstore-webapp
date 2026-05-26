@@ -1,6 +1,7 @@
 package com.bookstore.controller.admin;
 
 import com.bookstore.service.AuthService;
+import com.bookstore.dao.UserDao;
 import com.bookstore.model.Role;
 import com.bookstore.model.User;
 import jakarta.servlet.ServletException;
@@ -20,10 +21,12 @@ import java.util.List;
 public class AdminUserController extends HttpServlet {
     
     private AuthService authService;
+    private UserDao userDao;
     
     @Override
     public void init() throws ServletException {
         authService = new AuthService();
+        userDao = new UserDao();
     }
     
     @Override
@@ -40,14 +43,16 @@ public class AdminUserController extends HttpServlet {
             }
             
             int page = getIntParameter(request, "page", 1);
+            int pageSize = 20;
+            int offset = (page - 1) * pageSize;
             
-            // В реальной системе нужен отдельный метод для получения всех пользователей
-            // Здесь упрощённая реализация
-            List<User> users = List.of(); // TODO: реализовать получение всех пользователей
+            List<User> users = userDao.findAll(offset, pageSize);
+            long totalUsers = userDao.count();
+            int totalPages = (int) Math.ceil((double) totalUsers / pageSize);
             
             request.setAttribute("users", users);
             request.setAttribute("currentPage", page);
-            request.setAttribute("totalPages", 1);
+            request.setAttribute("totalPages", totalPages);
             
             request.getRequestDispatcher("/WEB-INF/views/admin/users.jsp").forward(request, response);
             

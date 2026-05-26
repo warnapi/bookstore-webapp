@@ -44,7 +44,7 @@
                         <td>${book.title}</td>
                         <td>${book.author}</td>
                         <td>${book.isbn}</td>
-                        <td>${book.price} ₽</td>
+                        <td>${book.price} BYN</td>
                         <td>
                             <span class="badge ${book.stock > 0 ? 'bg-success' : 'bg-danger'}">
                                 ${book.stock}

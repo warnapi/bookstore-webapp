@@ -52,16 +52,32 @@
         <c:if test="${book.stock > 0}">
             <c:choose>
                 <c:when test="${not empty sessionScope.user}">
-                    <form action="${pageContext.request.contextPath}/cart" method="post" class="d-flex gap-2">
-                        <input type="hidden" name="action" value="add">
-                        <input type="hidden" name="bookId" value="${book.id}">
-                        <div class="input-group" style="max-width: 150px;">
-                            <input type="number" name="quantity" class="form-control" value="1" min="1" max="${book.stock}">
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-cart"></i> Добавить в корзину
-                        </button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <form action="${pageContext.request.contextPath}/cart" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="bookId" value="${book.id}">
+                            <div class="input-group" style="max-width: 150px;">
+                                <input type="number" name="quantity" class="form-control" value="1" min="1" max="${book.stock}">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-cart"></i> Добавить в корзину
+                            </button>
+                        </form>
+                        <form action="${pageContext.request.contextPath}/wishlist" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="action" value="add">
+                            <input type="hidden" name="bookId" value="${book.id}">
+                            <c:if test="${not empty wishlists}">
+                                <select name="wishlistId" class="form-select" style="max-width: 150px;">
+                                    <c:forEach var="w" items="${wishlists}">
+                                        <option value="${w.id}">${w.name}</option>
+                                    </c:forEach>
+                                </select>
+                            </c:if>
+                            <button type="submit" class="btn btn-outline-danger btn-lg">
+                                <i class="bi bi-heart"></i> В список
+                            </button>
+                        </form>
+                    </div>
                 </c:when>
                 <c:otherwise>
                     <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg">

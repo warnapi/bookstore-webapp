@@ -101,16 +101,34 @@ public class WishlistController extends HttpServlet {
             if ("create".equals(action)) {
                 String name = request.getParameter("name");
                 if (name != null && !name.trim().isEmpty()) {
-                    wishlistService.createWishlist(user.id(), name.trim());
+                    Wishlist wishlist = wishlistService.createWishlist(user.id(), name.trim());
+                    response.sendRedirect(request.getContextPath() + "/wishlist/view/" + wishlist.id());
+                    return;
                 }
                 
             } else if ("delete".equals(action)) {
                 Long wishlistId = Long.parseLong(request.getParameter("wishlistId"));
                 wishlistService.deleteWishlist(wishlistId);
+                response.sendRedirect(request.getContextPath() + "/wishlist");
+                return;
                 
             } else if ("add".equals(action)) {
-                Long wishlistId = Long.parseLong(request.getParameter("wishlistId"));
+                String wishlistIdStr = request.getParameter("wishlistId");
                 Long bookId = Long.parseLong(request.getParameter("bookId"));
+                
+                if (wishlistIdStr == null || wishlistIdStr.trim().isEmpty()) {
+                    // Если список не выбран, берём первый список или создаём новый
+                    List<com.bookstore.model.Wishlist> wishlists = wishlistService.getUserWishlists(user.id());
+                    if (!wishlists.isEmpty()) {
+                        wishlistIdStr = String.valueOf(wishlists.get(0).id());
+                    } else {
+                        // Создаём список по умолчанию
+                        com.bookstore.model.Wishlist wishlist = wishlistService.createWishlist(user.id(), "Мой список");
+                        wishlistIdStr = String.valueOf(wishlist.id());
+                    }
+                }
+                
+                Long wishlistId = Long.parseLong(wishlistIdStr);
                 
                 try {
                     wishlistService.addItemToWishlist(wishlistId, bookId);
@@ -118,27 +136,29 @@ public class WishlistController extends HttpServlet {
                     // Книга уже в списке - игнорируем
                 }
                 
+                response.sendRedirect(request.getContextPath() + "/wishlist/view/" + wishlistId);
+                return;
+                
             } else if ("remove".equals(action)) {
                 Long wishlistId = Long.parseLong(request.getParameter("wishlistId"));
                 Long bookId = Long.parseLong(request.getParameter("bookId"));
                 
                 wishlistService.removeItemFromWishlist(wishlistId, bookId);
                 
+                response.sendRedirect(request.getContextPath() + "/wishlist/view/" + wishlistId);
+                return;
+                
             } else if ("addtocart".equals(action)) {
                 Long bookId = Long.parseLong(request.getParameter("bookId"));
                 int quantity = Integer.parseInt(request.getParameter("quantity"));
                 
                 cartService.addToCart(user.id(), bookId, quantity);
+                response.sendRedirect(request.getContextPath() + "/cart");
+                return;
             }
             
-            // Перенаправление
-            String redirectUrl = request.getContextPath() + "/wishlist";
-            String wishlistId = request.getParameter("wishlistId");
-            if (wishlistId != null) {
-                redirectUrl += "/view/" + wishlistId;
-            }
-            
-            response.sendRedirect(redirectUrl);
+            // Перенаправление на список всех списков
+            response.sendRedirect(request.getContextPath() + "/wishlist");
             
         } catch (Exception e) {
             throw new ServletException("Ошибка обработки списка желаний", e);

@@ -302,7 +302,7 @@ public class OrderDao extends BaseDao {
      * Получает общую сумму продаж.
      */
     public BigDecimal getTotalSales() throws SQLException {
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'PAID'";
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status IN ('PAID', 'SHIPPED', 'DELIVERED')";
         
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();

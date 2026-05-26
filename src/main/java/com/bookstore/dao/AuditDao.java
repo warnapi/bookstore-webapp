@@ -19,11 +19,10 @@ public class AuditDao extends BaseDao {
             INSERT INTO audit_logs (admin_user_id, admin_user_name, action, 
                                    entity_type, entity_id, details)
             VALUES (?, ?, ?, ?, ?, ?)
-            RETURNING id, timestamp
             """;
         
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setLong(1, auditLog.adminUserId());
             stmt.setString(2, auditLog.adminUserName());
@@ -32,18 +31,34 @@ public class AuditDao extends BaseDao {
             stmt.setObject(5, auditLog.entityId());
             stmt.setString(6, auditLog.details());
             
-            try (ResultSet rs = stmt.executeQuery()) {
+            int affectedRows = stmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                throw new SQLException("Не удалось создать запись аудита");
+            }
+            
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return new AuditLog(
-                        rs.getLong("id"),
-                        auditLog.adminUserId(),
-                        auditLog.adminUserName(),
-                        auditLog.action(),
-                        auditLog.entityType(),
-                        auditLog.entityId(),
-                        auditLog.details(),
-                        rs.getTimestamp("timestamp").toLocalDateTime()
-                    );
+                    Long id = rs.getLong(1);
+                    // timestamp генерируется базой данных
+                    String selectSql = "SELECT timestamp FROM audit_logs WHERE id = ?";
+                    try (PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+                        selectStmt.setLong(1, id);
+                        try (ResultSet selectRs = selectStmt.executeQuery()) {
+                            if (selectRs.next()) {
+                                return new AuditLog(
+                                    id,
+                                    auditLog.adminUserId(),
+                                    auditLog.adminUserName(),
+                                    auditLog.action(),
+                                    auditLog.entityType(),
+                                    auditLog.entityId(),
+                                    auditLog.details(),
+                                    selectRs.getTimestamp("timestamp").toLocalDateTime()
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }

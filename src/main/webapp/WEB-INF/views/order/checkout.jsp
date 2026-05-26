@@ -32,10 +32,10 @@
     
     <div class="col-lg-4">
         <div class="card">
-            <div class="card-body">
-                <h4>Итого к оплате</h4>
-                <hr>
-                <p class="display-6">${cartService.getCartTotal(sessionScope.user.id())} ₽</p>
+                    <div class="card-body">
+                        <h4>Итого к оплате</h4>
+                        <hr>
+                        <p class="display-6">${cartTotal} BYN</p>
                 
                 <form action="${pageContext.request.contextPath}/order" method="post">
                     <input type="hidden" name="action" value="confirm">

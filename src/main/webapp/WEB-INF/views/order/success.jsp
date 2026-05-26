@@ -13,7 +13,7 @@
         <div class="card mx-auto mt-4" style="max-width: 500px;">
             <div class="card-body">
                 <h5>Номер заказа: <strong>${order.orderNumber}</strong></h5>
-                <p>Сумма: <strong>${order.totalAmount} ₽</strong></p>
+                <p>Сумма: <strong>${order.totalAmount} BYN</strong></p>
                 <p>Статус: <span class="badge bg-primary">${order.status.name()}</span></p>
                 <p>Дата: ${order.createdAt}</p>
             </div>

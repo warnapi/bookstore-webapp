@@ -2,6 +2,7 @@ package com.bookstore.controller;
 
 import com.bookstore.service.CatalogService;
 import com.bookstore.service.ReviewService;
+import com.bookstore.service.WishlistService;
 import com.bookstore.model.Book;
 import com.bookstore.model.Review;
 import jakarta.servlet.ServletException;
@@ -22,11 +23,13 @@ public class BookDetailController extends HttpServlet {
     
     private CatalogService catalogService;
     private ReviewService reviewService;
+    private WishlistService wishlistService;
     
     @Override
     public void init() throws ServletException {
         catalogService = new CatalogService();
         reviewService = new ReviewService();
+        wishlistService = new WishlistService();
     }
     
     @Override
@@ -65,15 +68,19 @@ public class BookDetailController extends HttpServlet {
             
             // Проверяем, может ли текущий пользователь оставить отзыв
             boolean canReview = false;
+            List<com.bookstore.model.Wishlist> wishlists = null;
             HttpSession session = request.getSession(false);
             if (session != null && session.getAttribute("user") != null) {
                 Long userId = ((com.bookstore.model.User) session.getAttribute("user")).id();
                 canReview = reviewService.canUserReviewBook(userId, bookId);
+                // Получаем списки желаний пользователя
+                wishlists = wishlistService.getUserWishlists(userId);
             }
             
             request.setAttribute("book", book);
             request.setAttribute("reviews", reviews);
             request.setAttribute("canReview", canReview);
+            request.setAttribute("wishlists", wishlists);
             
             request.getRequestDispatcher("/WEB-INF/views/catalog/book-detail.jsp").forward(request, response);
             

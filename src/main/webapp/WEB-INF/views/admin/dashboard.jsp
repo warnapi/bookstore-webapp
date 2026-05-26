@@ -13,7 +13,7 @@
         <div class="card text-white bg-primary">
             <div class="card-body">
                 <h5>Общие продажи</h5>
-                <h2>${totalSales} ₽</h2>
+                <h2>${totalSales} BYN</h2>
             </div>
         </div>
     </div>
@@ -29,7 +29,7 @@
         <div class="card text-white bg-info">
             <div class="card-body">
                 <h5>Книг в каталоге</h5>
-                <h2>${bookStatistics.totalBooks()}</h2>
+                <h2>${bookStatistics.totalBooks}</h2>
             </div>
         </div>
     </div>
@@ -83,7 +83,7 @@
                             <tr>
                                 <td>${order.orderNumber}</td>
                                 <td>${order.userId}</td>
-                                <td>${order.totalAmount} ₽</td>
+                                <td>${order.totalAmount} BYN</td>
                                 <td>
                                     <span class="badge bg-${order.status.name() == 'PAID' || order.status.name() == 'DELIVERED' ? 'success' : 
                                                         order.status.name() == 'PENDING' ? 'warning' : 

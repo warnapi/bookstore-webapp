@@ -30,7 +30,7 @@
                                 <div class="col-md-7">
                                     <h5>${item.bookTitle}</h5>
                                     <p class="text-muted mb-1">${item.bookAuthor}</p>
-                                    <p class="price">${item.bookPrice} ₽</p>
+                                    <p class="price">${item.bookPrice} BYN</p>
                                     <c:if test="${!item.isAvailable}">
                                         <p class="text-danger mb-0">
                                             <i class="bi bi-exclamation-triangle"></i> Недостаточно на складе
@@ -64,9 +64,9 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h4>Итого</h4>
+                        <h4>Итого к оплате</h4>
                         <hr>
-                        <p class="display-6">${cartService.getCartTotal(sessionScope.user.id())} ₽</p>
+                        <p class="display-6">${cartTotal} BYN</p>
                         
                         <c:if test="${hasUnavailableItems}">
                             <div class="alert alert-warning">
